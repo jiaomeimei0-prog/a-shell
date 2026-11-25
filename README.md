@@ -39,6 +39,12 @@ cd a-shell
 
 The Xcode project resolves SwiftTerm via `XCLocalSwiftPackageReference` at `../SwiftTerm` (sibling of this repo, or `Apps/SwiftTerm` → parent package inside the SwiftTerm monorepo). There is no nested SwiftTerm git submodule anymore.
 
+**Source of truth:** terminal features and security patches belong only in
+[`jiaomeimei0-prog/SwiftTerm`](https://github.com/jiaomeimei0-prog/SwiftTerm)
+(`Sources/SwiftTerm/`). This a-Shell fork must consume that package and limit
+its own changes to app wiring (UI, `ios_system`, Relay, Xcode/CI) — do not
+reintroduce a nested SwiftTerm checkout or patch emulator behavior here.
+
 In an existing checkout, run `git submodule sync` before updating initialized submodules (e.g. `cpython`). Avoid `--recursive`: the pinned CPython tree contains nested SSH URLs and an unavailable rasterio commit.
 
 `downloadFrameworks.sh` installs the binary targets from `xcfs/Package.swift` under `xcfs/.build/artifacts/xcfs`, with Swift Package Manager checksum verification. Its `pythonInstall.tar.gz` contains Python 3.9 files, while the Python targets require Python 3.13.
