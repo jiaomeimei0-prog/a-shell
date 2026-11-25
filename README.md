@@ -27,13 +27,26 @@ a-Shell is now <a href="https://holzschu.github.io/a-Shell_iOS/">available on th
 Use macOS with Xcode and its iOS SDKs installed. Start with `a-Shell-noPython`, which uses the publicly downloadable frameworks. Both `a-Shell` and `a-Shell-mini` embed Python and need prebuilt Python frameworks, which are not currently published.
 
 ```sh
-git clone https://github.com/holzschu/a-shell.git
+git clone https://github.com/jiaomeimei0-prog/a-shell.git
 cd a-shell
 git submodule update --init SwiftTerm
 ./downloadFrameworks.sh
 ```
 
-In an existing checkout, run `git submodule sync` before updating initialized submodules. Avoid `--recursive`: the pinned CPython tree contains nested SSH URLs and an unavailable rasterio commit.
+The Xcode project resolves SwiftTerm via `XCLocalSwiftPackageReference` at
+`relativePath = SwiftTerm`. That path is a **git submodule of the fork v2**
+[`jiaomeimei0-prog/SwiftTerm`](https://github.com/jiaomeimei0-prog/SwiftTerm)
+(not `holzschu/SwiftTerm`). App features stay in this repo; emulator patches
+belong only in that SwiftTerm fork — do not edit sources under `SwiftTerm/`
+here.
+
+**Five original terminal host capabilities** are preserved by HostHelpers on
+fork v2: (1) prompt/line-editor, (2) cursor control, (3) selection editing,
+(4) display/style helpers, (5) terminal/buffer access + `feed` I/O path.
+
+In an existing checkout, run `git submodule sync` before updating initialized
+submodules. Avoid `--recursive`: the pinned CPython tree contains nested SSH
+URLs and an unavailable rasterio commit.
 
 `downloadFrameworks.sh` installs the binary targets from `xcfs/Package.swift` under `xcfs/.build/artifacts/xcfs`, with Swift Package Manager checksum verification. Its `pythonInstall.tar.gz` contains Python 3.9 files, while the Python targets require Python 3.13.
 
@@ -65,7 +78,7 @@ Because Python 3.x uses functions that are only available on the iOS 14 SDK, I'v
 
 The [App build workflow](.github/workflows/app-build.yml) builds `a-Shell-noPython` on every pull request and can also be run manually with `workflow_dispatch`. It builds unsigned Debug apps for generic iOS devices (arm64) and Simulator (x86_64) with Xcode 26.3 on `macos-15`. These are build checks; they do not run the app or its commands.
 
-CI initializes only the SwiftTerm submodule and runs `./downloadFrameworks.sh --jobs 4`; the script passes extra arguments to `swift package`. It uses `swift package resolve` to download the binary targets and verify their checksums against `xcfs/Package.swift`. A failed download or checksum mismatch stops the script, and a failed `xcodebuild` fails the job. Swift package downloads are cached. The workflow token has read-only access to repository contents.
+CI initializes the `SwiftTerm` submodule (`jiaomeimei0-prog/SwiftTerm`) and runs `./downloadFrameworks.sh --jobs 4`; the script passes extra arguments to `swift package`. It uses `swift package resolve` to download the binary targets and verify their checksums against `xcfs/Package.swift`. A failed download or checksum mismatch stops the script, and a failed `xcodebuild` fails the job. Swift package downloads are cached. The workflow token has read-only access to repository contents.
 
 CI preserves the project's iOS 14.0 deployment target with Xcode 26.3. The Python variants remain outside CI because their required Python 3.13 frameworks are not publicly available.
 

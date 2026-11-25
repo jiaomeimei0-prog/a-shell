@@ -4,4 +4,5 @@
 	branch = 3.13
 [submodule "SwiftTerm"]
 	path = SwiftTerm
-	url = https://github.com/holzschu/SwiftTerm.git
+	url = https://github.com/jiaomeimei0-prog/SwiftTerm.git
+	branch = main
