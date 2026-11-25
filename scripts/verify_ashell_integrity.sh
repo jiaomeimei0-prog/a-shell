@@ -147,9 +147,11 @@ for pair in "8443:wasm-full" "8334:wasm-mini" "8765:relay-full" "8766:relay-mini
   label=${pair##*:}
   # Prefer curl against localhost TLS; do not fail the suite on cert expiry.
   if command -v curl >/dev/null 2>&1; then
-    code=$(curl -k -s -o /dev/null -w '%{http_code}' --connect-timeout 2 "https://127.0.0.1:${port}/" 2>/dev/null || printf '000')
+    code=$(curl -k -s -o /dev/null -w '%{http_code}' --connect-timeout 2 "https://127.0.0.1:${port}/" 2>/dev/null || true)
+    code=$(printf '%s' "$code" | tr -cd '0-9')
+    [ -n "$code" ] || code=000
     case "$code" in
-      000)
+      000|0)
         if echo "$label" | grep -q wasm; then
           warn "no TLS response on 127.0.0.1:$port ($label) — server may be down or different port"
         else
