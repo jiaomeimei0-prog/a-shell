@@ -739,7 +739,6 @@ extension SceneDelegate {
                     // August 2026: the cursor is moved back to the end of the line,
                     // unless we add these lines.
                     terminalView?.getTerminal().updateFullScreen()
-                    terminalView?.updateDisplay()
                 }
             }
         case interrupt:
@@ -797,7 +796,6 @@ extension SceneDelegate {
                     // July 2026: the cursor is moved back to the end of the line,
                     // unless we add these lines.
                     terminalView?.getTerminal().updateFullScreen()
-                    terminalView?.updateDisplay()
                 }
             }
         case tabulation: // autocomplete
@@ -967,7 +965,6 @@ extension SceneDelegate {
                         terminalView?.moveToBeginningOfLine()
                         terminalView?.clearToEndOfLine()
                         terminalView?.getTerminal().updateFullScreen() // force redraw
-                        terminalView?.updateDisplay()
                         commandBeforeCursor = ""
                         commandAfterCursor = ""
                         synchronizeRecalledInputContext(source)
@@ -992,7 +989,6 @@ extension SceneDelegate {
                         terminalView?.moveToBeginningOfLine()
                         terminalView?.clearToEndOfLine()
                         terminalView?.getTerminal().updateFullScreen() // force redraw
-                        terminalView?.updateDisplay()
                         commandBeforeCursor = ""
                         commandAfterCursor = ""
                         synchronizeRecalledInputContext(source)
@@ -1162,7 +1158,6 @@ extension SceneDelegate {
                         terminalView?.moveToBeginningOfLine()
                         terminalView?.clearToEndOfLine()
                         terminalView?.getTerminal().updateFullScreen() // force redraw
-                        terminalView?.updateDisplay()
                         commandBeforeCursor = ""
                         commandAfterCursor = ""
                         delayedVoiceOver(message: "empty line")
@@ -1185,7 +1180,6 @@ extension SceneDelegate {
                         terminalView?.moveToBeginningOfLine()
                         terminalView?.clearToEndOfLine()
                         terminalView?.getTerminal().updateFullScreen() // force redraw
-                        terminalView?.updateDisplay()
                         commandBeforeCursor = ""
                         commandAfterCursor = ""
                         delayedVoiceOver(message: " empty line ")
@@ -1264,7 +1258,6 @@ extension SceneDelegate {
             commandBeforeCursor = ""
             terminalView?.moveToBeginningOfLine()
             terminalView?.getTerminal().updateFullScreen()
-            terminalView?.updateDisplay()
             UIAccessibility.post(notification: .announcement, argument: "insertion point " + commandAfterCursor)
         case "\u{0005}": // control E, move to end of line
             if (autocompleteRunning) {
@@ -1274,7 +1267,6 @@ extension SceneDelegate {
             commandAfterCursor = ""
             terminalView?.moveToEndOfLine()
             terminalView?.getTerminal().updateFullScreen()
-            terminalView?.updateDisplay()
             UIAccessibility.post(notification: .announcement, argument: commandBeforeCursor + " insertion point")
         case "\u{000B}": // control K: kill until end of line
             if (autocompleteRunning) {
@@ -1283,7 +1275,6 @@ extension SceneDelegate {
             terminalView?.clearToEndOfLine()
             commandAfterCursor = ""
             terminalView?.getTerminal().updateFullScreen()
-            terminalView?.updateDisplay()
             UIAccessibility.post(notification: .announcement, argument: commandBeforeCursor + " insertion point")
         case "\u{0015}": // control U: kill from cursor to beginning of the line
             if (autocompleteRunning) {
@@ -1298,7 +1289,6 @@ extension SceneDelegate {
             }
             terminalView?.restoreCursorPosition()
             terminalView?.getTerminal().updateFullScreen() // force redraw
-            terminalView?.updateDisplay()
             UIAccessibility.post(notification: .announcement, argument: "insertion point " + commandAfterCursor)
         case escape + "\u{0008}": // alt delete on external keyboard
             fallthrough
@@ -1835,7 +1825,6 @@ extension SceneDelegate {
                 terminalView?.font = terminalFont
                 basicCharWidth = NSAttributedString(string: "m", attributes: [.font: self.terminalView?.font]).size().width
                 terminalView?.getTerminal().updateFullScreen()
-                terminalView?.updateDisplay()
             }
         }
     }
