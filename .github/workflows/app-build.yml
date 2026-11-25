@@ -35,6 +35,9 @@ jobs:
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           repository: jiaomeimei0-prog/SwiftTerm
+          # Track the paired monorepo PR until it lands on main (host helpers +
+          # Xcode 26.3 PowerlineRenderer fix). Switch back to default branch after merge.
+          ref: cursor/remove-nested-swiftterm-45fd
           path: SwiftTerm
           persist-credentials: false
       - name: Cache Swift package artifacts
