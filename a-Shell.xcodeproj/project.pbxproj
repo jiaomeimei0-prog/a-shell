@@ -6440,7 +6440,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		2213EE112EE4A148001F0114 /* XCLocalSwiftPackageReference "SwiftTerm" */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../SwiftTerm;
+			relativePath = SwiftTerm;
 		};
 /* End XCLocalSwiftPackageReference section */
 
