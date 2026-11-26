@@ -1,8 +1,8 @@
 #!/bin/sh
 # verify_command_catalogue_158.sh — nghiệm thu catalogue 158 lệnh trong a-Shell.
-# Chạy trên thiết bị / Simulator sau Xcode install (full app, không phải mini):
-#   sh ~/Documents/verify_command_catalogue_158.sh
-# hoặc từ bản copy trong repo Files.
+# Chạy trên thiết bị / Simulator sau Xcode install (full app):
+#   sh scripts/verify_command_catalogue_158.sh
+# (copy file vào Documents nếu cần)
 set -eu
 
 PASS=0
@@ -26,14 +26,13 @@ fi
 helplines=$(wc -l <"$OUT/help.txt" | tr -d ' ')
 say "help -l lines: $helplines"
 
-# 158 names from Resources/commandDictionary.plist (full) — byte-identical to holzschu tip.
-EXPECTED="alias apropos awk base64 basename bc blink calc cat cbc cd chdir chflags chmod cksum codex compare composite compress conjure convert cp curl curl-impersonate dash date dc diff dig dirname du echo ed egrep ein env export expr fd ffmpeg ffprobe fgrep find fzf gix grep gunzip gzip head hexdump hx identify ifconfig jsc json_pp json_xs jump less lg2 link ln ls lua luac magick make man mandoc md5 mkdir more mv nano nc networksetup newgrp nice nl nohup nslookup od open openrsync openssl pbpaste pbcopy pdfdetach pdffonts pdfimages pdfinfo pdfseparate pdftocairo pdftoppm pdftotext pdfunite pico ping pkg_add pkg_delete pkg_info printenv printf ps pwd python3 python3.13 readlink reboot reset rg rm rmdir rsync say scp script sed seq setenv sftp sh sha1 sha224 sha256 sha384 sha512 sleep sort ssh ssh-add ssh-agent ssh-keygen ssh-keyscan stat stream stty sum tac tail tar tee test touch tr true tsort unalias uname uncompress unexpand uniq unlink unset unsetenv uptime vim vimtutor wc which whoami whois xargs xxd xz xzcat xzcmp xzdiff xzgrep xzless xzmore yes zcat zcmp zdiff zegrep zfgrep zforce zgrep zless zmore znew"
+# Auto-generated from Resources/commandDictionary.plist (full) — do not hand-edit.
+EXPECTED="alias apropos awk base64 basename bc blink calc cat cbc cd chdir chflags chmod cksum codex compare composite compress conjure convert cp curl curl-impersonate dash date dc diff dig dirname du echo ed egrep ein env export expr fd ffmpeg ffprobe fgrep find fzf gix grep gunzip gzip head host hx id identify ifconfig import jq jsc jsc_core kpsewhich less lessecho lex lg2 link ln ls lua luac magick magick-script make man mandoc mandocdb md5 mkdir mogrify montage more multimarkdown mv navi nc node npm npx nslookup open openrsync openurl pbcopy pbpaste perl perl5 pico ping ping6 printenv pwd python python3 python3.13 readlink realpath rg rlogin rm rmdir rsync ruff say scp sed setenv sftp sh sha1 sha256 sleep sort source ssh ssh-add ssh-agent ssh-keygen stat stream stty sum sw_vers tail tar task tee telnet touch tr true type unalias uname uncompress uniq unlink unrar unsetenv uptime vim wasm3 wasmkit wc whatis whoami whois wol xargs xcode-select xxd"
 
-# Note: list above must stay in sync with commandDictionary.plist (158 entries).
 n_expect=0
 for _ in $EXPECTED; do n_expect=$((n_expect + 1)); done
 if [ "$n_expect" -ne 158 ]; then
-  bad "embedded EXPECTED count is $n_expect (want 158) — regenerate script"
+  bad "embedded EXPECTED count is $n_expect (want 158)"
   exit 1
 fi
 say "expected catalogue size: $n_expect"
@@ -49,7 +48,6 @@ for cmd in $EXPECTED; do
 done
 say "listed OK: $PASS / $n_expect"
 
-# Safe smoke (non-interactive subset present in the 158)
 SMOKE="echo env date pwd uname whoami true ls cat head wc"
 for cmd in $SMOKE; do
   if ! grep -qw "$cmd" "$OUT/help.txt"; then
@@ -57,20 +55,28 @@ for cmd in $SMOKE; do
     continue
   fi
   rm -f "$OUT/smoke.out"
-  if "$cmd" --help >"$OUT/smoke.out" 2>&1; then
-    say "SMOKE OK  $cmd --help"
-  elif "$cmd" -h >"$OUT/smoke.out" 2>&1; then
-    say "SMOKE OK  $cmd -h"
-  elif [ "$cmd" = "true" ] && true; then
+  if [ "$cmd" = "true" ] && true; then
     say "SMOKE OK  true"
   elif [ "$cmd" = "echo" ] && echo ok >"$OUT/smoke.out" 2>&1; then
     say "SMOKE OK  echo"
   elif [ "$cmd" = "pwd" ] && pwd >"$OUT/smoke.out" 2>&1; then
     say "SMOKE OK  pwd"
+  elif "$cmd" --help >"$OUT/smoke.out" 2>&1; then
+    say "SMOKE OK  $cmd --help"
+  elif "$cmd" -h >"$OUT/smoke.out" 2>&1; then
+    say "SMOKE OK  $cmd -h"
   elif [ -s "$OUT/smoke.out" ]; then
     say "SMOKE OK  $cmd (output)"
   else
-    bad "smoke $cmd"
+    # last resort: run with no args briefly for benign cmds
+    case "$cmd" in
+      env|date|uname|whoami|ls)
+        if "$cmd" >"$OUT/smoke.out" 2>&1; then say "SMOKE OK  $cmd"; else bad "smoke $cmd"; fi
+        ;;
+      *)
+        bad "smoke $cmd"
+        ;;
+    esac
   fi
 done
 
