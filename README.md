@@ -56,6 +56,18 @@ Additional prerequisites:
 - For full `a-Shell`, build the local frameworks using [node/README.md](node/README.md), [fd/README.md](fd/README.md), [fzf/README.md](fzf/README.md), [navi/README.md](navi/README.md), [gitoxide/README.md](gitoxide/README.md), [ruff/README.md](ruff/README.md), [rg/README.md](rg/README.md) and [helix/README.md](helix/README.md).
 - The Python targets also reference inputs absent from the downloads, including `openrsync`/`openrsyncA`, `curl-impersonate`, `WasmKitCommand` and `blink`; full `a-Shell` references additional TeX, `cbc` and `perlC` frameworks. This list is not exhaustive; see [#1005](https://github.com/holzschu/a-shell/issues/1005).
 
+### Stock OpenSSH (mini / iOS 26+, optional)
+
+The **158-command** `commandDictionary` already includes legacy `ssh`/`scp`/`sftp`/`ssh-keygen` via `ssh_cmd.framework` (identical to upstream holzschu). Tip parity also wires an optional **Stock OpenSSH 10.6** overlay for **a-Shell mini** when:
+
+- iOS ≥ 26, not Mac Catalyst / iOS-app-on-Mac  
+- `ShellWorkerCount` > 0  
+- Runtime exports `ios_posix_spawn`  
+- `Resources_mini/sshStockCommands.plist` is in the bundle  
+- Locally built `xcfs/{SSH,SCP,SFTP,SSHKeygen}Stock.xcframework` are present (not published in `xcfs/Package.swift`; build from [ios_system ssh-stock](https://github.com/holzschu/ios_system))
+
+Without those XCFrameworks, the app keeps the legacy SSH clients from the 158 catalogue. Host-only registration checks: `tests/ssh-stock-registration.sh` (needs `plutil` on macOS).
+
 Open `a-Shell.xcodeproj` and select `a-Shell-noPython`. To build an unsigned app for iOS devices:
 
 ```sh
