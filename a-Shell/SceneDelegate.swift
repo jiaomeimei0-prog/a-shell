@@ -6336,11 +6336,19 @@ extension SceneDelegate: WKUIDelegate {
     }
     
     func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
-        // Is this queue necessary?
-        // commandQueue.async {
-            let cred = URLCredential(trust: challenge.protectionSpace.serverTrust!)
-            completionHandler(.useCredential, cred)
-        // }
+        let space = challenge.protectionSpace
+        // Only pin-trust the local WASM HTTPS leaf on loopback. Everything else → system default.
+        guard space.authenticationMethod == NSURLAuthenticationMethodServerTrust,
+              let host = space.host,
+              host == "localhost" || host == "127.0.0.1",
+              let trust = space.serverTrust,
+              let expected = LocalLoopbackTLS.expectedLeafSHA256(),
+              let actual = LocalLoopbackTLS.leafSHA256(of: trust),
+              actual == expected else {
+            completionHandler(.performDefaultHandling, nil)
+            return
+        }
+        completionHandler(.useCredential, URLCredential(trust: trust))
     }
     
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String, initiatedByFrame frame: WKFrameInfo,

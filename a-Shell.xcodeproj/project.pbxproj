@@ -230,17 +230,10 @@
 		227814F330A85966003A4910 /* ProgressCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 196EF73B3E7DE25B1CE754F5 /* ProgressCommand.swift */; };
 		227814F430A85966003A4910 /* ProgressCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 196EF73B3E7DE25B1CE754F5 /* ProgressCommand.swift */; };
 		227814F530A85966003A4910 /* ProgressCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 196EF73B3E7DE25B1CE754F5 /* ProgressCommand.swift */; };
-		227814F630AA2B3E003A4910 /* localCertificate.pfx in Resources */ = {isa = PBXBuildFile; fileRef = 2213DCB72BDE7314008BD5F2 /* localCertificate.pfx */; };
-		227814F730AA2B42003A4910 /* localCertificate.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24822BE01ED2003A8031 /* localCertificate.pem */; };
-		227814F830AA2B45003A4910 /* localCertificateKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24832BE01ED3003A8031 /* localCertificateKey.pem */; };
 		22781C4D270196AE00E90579 /* luatex.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22DC1F6625700F7E0068004E /* luatex.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		227A13642F308E9C006FD5C1 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 227A13632F308E9C006FD5C1 /* SwiftTerm */; };
 		227A540830850D0E007EA879 /* fzf.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A540730850D06007EA879 /* fzf.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		227A540A308519F1007EA879 /* fd.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227A5409308519E1007EA879 /* fd.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		227B24842BE01ED5003A8031 /* localCertificate.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24822BE01ED2003A8031 /* localCertificate.pem */; };
-		227B24852BE01ED5003A8031 /* localCertificateKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24832BE01ED3003A8031 /* localCertificateKey.pem */; };
-		227B24862BE033DE003A8031 /* localCertificate.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24822BE01ED2003A8031 /* localCertificate.pem */; };
-		227B24872BE033E1003A8031 /* localCertificateKey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 227B24832BE01ED3003A8031 /* localCertificateKey.pem */; };
 		227B248C2BE12FF1003A8031 /* wasm_withWorker.js in Resources */ = {isa = PBXBuildFile; fileRef = 227B248A2BE12FEE003A8031 /* wasm_withWorker.js */; };
 		227EE36E2F0913C000636757 /* SwiftTerm in Frameworks */ = {isa = PBXBuildFile; productRef = 227EE36D2F0913C000636757 /* SwiftTerm */; };
 		227F058330867D0500FCC674 /* node.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 227F058230867C0300FCC674 /* node.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -987,8 +980,6 @@
 		22F75D41265FA3970056AFD2 /* xxd.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F75D40265FA3500056AFD2 /* xxd.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22F75D42265FA3A30056AFD2 /* xxd.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F75D40265FA3500056AFD2 /* xxd.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22F8457F266FDB7C00A0BF11 /* lg2.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 2234FB14266F765A00702AD1 /* lg2.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		22F87DB62EB8B3B7003251CC /* localCertificate.pfx in Resources */ = {isa = PBXBuildFile; fileRef = 2213DCB72BDE7314008BD5F2 /* localCertificate.pfx */; };
-		22F87DB72EB8B3C6003251CC /* localCertificate.pfx in Resources */ = {isa = PBXBuildFile; fileRef = 2213DCB72BDE7314008BD5F2 /* localCertificate.pfx */; };
 		22F9641B30852E8100868C46 /* Ruff.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 22F9641A30852E7600868C46 /* Ruff.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		22FFB44229E87D950054F01F /* require_jscore.js in Resources */ = {isa = PBXBuildFile; fileRef = 22FFB44129E87D920054F01F /* require_jscore.js */; };
 		22FFB44429E88AE80054F01F /* url-polyfill.js in Resources */ = {isa = PBXBuildFile; fileRef = 22FFB44329E88AE60054F01F /* url-polyfill.js */; };
@@ -2151,7 +2142,6 @@
 		220F36512BC458C800842FEE /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		220F36542BC7FAD800842FEE /* llvmDictionary.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = llvmDictionary.plist; path = Resources/llvmDictionary.plist; sourceTree = "<group>"; };
 		22108D6A2338BE9D003D7556 /* texlive_2019_texmf-dist_fonts_type1 */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "texlive_2019_texmf-dist_fonts_type1"; path = "ODR/texlive_2019_texmf-dist_fonts_type1"; sourceTree = "<group>"; };
-		2213DCB72BDE7314008BD5F2 /* localCertificate.pfx */ = {isa = PBXFileReference; lastKnownFileType = file; path = localCertificate.pfx; sourceTree = "<group>"; };
 		22178EA4257A7A77008EB2B4 /* node_modules */ = {isa = PBXFileReference; lastKnownFileType = folder; name = node_modules; path = Resources_mini/node_modules; sourceTree = "<group>"; };
 		22178EAD257AA715008EB2B4 /* Library */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Library; path = Resources_mini/Library; sourceTree = "<group>"; };
 		22178EC2257AF55E008EB2B4 /* a-Shell-mini-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "a-Shell-mini-Info.plist"; sourceTree = "<group>"; };
@@ -2253,8 +2243,6 @@
 		227A434529FD202300548D77 /* texlive_2023_texmf_dist_fonts_otf_ttf */ = {isa = PBXFileReference; lastKnownFileType = folder; name = texlive_2023_texmf_dist_fonts_otf_ttf; path = ODR/texlive_2023_texmf_dist_fonts_otf_ttf; sourceTree = "<group>"; };
 		227A540730850D06007EA879 /* fzf.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = fzf.xcframework; path = fzf/fzf.xcframework; sourceTree = "<group>"; };
 		227A5409308519E1007EA879 /* fd.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = fd.xcframework; path = fd/fd.xcframework; sourceTree = "<group>"; };
-		227B24822BE01ED2003A8031 /* localCertificate.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = localCertificate.pem; sourceTree = "<group>"; };
-		227B24832BE01ED3003A8031 /* localCertificateKey.pem */ = {isa = PBXFileReference; lastKnownFileType = text; path = localCertificateKey.pem; sourceTree = "<group>"; };
 		227B248A2BE12FEE003A8031 /* wasm_withWorker.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = wasm_withWorker.js; sourceTree = "<group>"; };
 		227B248B2BE12FF0003A8031 /* wasm_worker_wasm.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = wasm_worker_wasm.js; sourceTree = "<group>"; };
 		227F058230867C0300FCC674 /* node.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = node.xcframework; path = xcfs/node.xcframework; sourceTree = "<group>"; };
@@ -3435,9 +3423,6 @@
 				22D1335C2E61E35900E76E2E /* Library */,
 				227B248A2BE12FEE003A8031 /* wasm_withWorker.js */,
 				227B248B2BE12FF0003A8031 /* wasm_worker_wasm.js */,
-				227B24822BE01ED2003A8031 /* localCertificate.pem */,
-				227B24832BE01ED3003A8031 /* localCertificateKey.pem */,
-				2213DCB72BDE7314008BD5F2 /* localCertificate.pfx */,
 				22E337EB2949F4CD00A8F76C /* defaultToolbar.txt */,
 				22B114762817CEA200A5BF16 /* terminfo */,
 				227A433F29FD1FEF00548D77 /* Texlive 2023 */,
@@ -4734,9 +4719,6 @@
 				224A90652ADD0999006DB9CC /* Preview Assets.xcassets in Resources */,
 				224A90662ADD0999006DB9CC /* Assets.xcassets in Resources */,
 				224A90672ADD0999006DB9CC /* vim in Resources */,
-				227814F630AA2B3E003A4910 /* localCertificate.pfx in Resources */,
-				227814F730AA2B42003A4910 /* localCertificate.pem in Resources */,
-				227814F830AA2B45003A4910 /* localCertificateKey.pem in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4747,9 +4729,6 @@
 				227F0FB930868CE400FCC674 /* npm in Resources */,
 				22F0FE7B3A1C4B0D00A1B2C3 /* node-fetch in Resources */,
 				22D1335D2E61E35B00E76E2E /* Library in Resources */,
-				227B24842BE01ED5003A8031 /* localCertificate.pem in Resources */,
-				227B24852BE01ED5003A8031 /* localCertificateKey.pem in Resources */,
-				22F87DB72EB8B3C6003251CC /* localCertificate.pfx in Resources */,
 				222BE55B2BE2D512002E4272 /* wasm_withWorker.js in Resources */,
 				222BE55C2BE2D519002E4272 /* wasm_worker_wasm.js in Resources */,
 				22B9545E2F5E05C700EB6F25 /* wasm.js in Resources */,
@@ -4814,9 +4793,6 @@
 				229D2497257931E4004A78AC /* Preview Assets.xcassets in Resources */,
 				2230F40A257D47D100810B07 /* Assets.xcassets in Resources */,
 				229D2499257931E4004A78AC /* vim in Resources */,
-				227B24862BE033DE003A8031 /* localCertificate.pem in Resources */,
-				227B24872BE033E1003A8031 /* localCertificateKey.pem in Resources */,
-				22F87DB62EB8B3B7003251CC /* localCertificate.pfx in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
