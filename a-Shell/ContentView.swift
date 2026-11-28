@@ -776,7 +776,9 @@ private struct ServiceSection: View {
             }
             else {
                 Text("Change in ~/Documents/.relay.json")
-                if item.listen == "127.0.0.1" || item.listen == "::1" { Text("Mac access: change bind to 0.0.0.0 or :: in the config and run relay on.") }
+                if item.listen == "127.0.0.1" || item.listen == "::1" {
+                    Text("Mac access: only with mutualTLS enabled and a client CA enrolled may you set bind to 0.0.0.0 or ::. Do not expose all interfaces when mutualTLS is off — the token alone authorizes commands.")
+                }
             }
         }
     }

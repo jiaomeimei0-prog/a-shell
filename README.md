@@ -160,11 +160,11 @@ Every field below is required in `.relay.json`. Changes take effect on `relay on
 
 | Field | Default | Meaning |
 | --- | --- | --- |
-| `enabled` | `false` | Start at app launch. `relay on` and `relay off` update this field. |
-| `bind` | `"127.0.0.1"` | Numeric IPv4 or IPv6 address. Loopback accepts connections only from this device. Set `"0.0.0.0"` for all IPv4 interfaces, `"::"` for IPv6, or a specific interface address to connect from a Mac. |
+| `enabled` | `false` | Start at app launch. Default is off: no relay `NWListener` until `relay on`. `relay on` and `relay off` update this field. |
+| `bind` | `"127.0.0.1"` | Numeric IPv4 or IPv6 address. Default loopback accepts connections only from this device. **Do not bind `0.0.0.0` / `::` unless `mutualTLS` is `true` and a client CA is enrolled.** All-interface bind without mTLS exposes command execution to anyone on the LAN who obtains the token. |
 | `port` | `8765` (full), `8766` (mini) | TCP port, from 0 to 65535. Zero asks the OS to choose a port; `relay status` reports it. |
-| `mutualTLS` | `true` | Require a client certificate signed by the CA enrolled in `.relay-client-ca.der`. Missing or invalid enrollment prevents startup. Set `false` explicitly to accept clients without certificates. HTTPS and the token remain required. |
-| `token` | Random 256-bit value | Value of the `X-Token` request header. Must contain 32 to 256 printable ASCII characters without spaces. Use `relay tokens` to retrieve it; `relay status` also prints it when mutual TLS is off. |
+| `mutualTLS` | `true` | Require a client certificate signed by the CA enrolled in `.relay-client-ca.der`. Missing or invalid enrollment prevents startup. Set `false` explicitly to accept clients without certificates. HTTPS and the token remain required. Keep `bind` on loopback when mTLS is off. |
+| `token` | Random 256-bit value | Value of the `X-Token` request header. Must contain 32 to 256 printable ASCII characters without spaces. **Treat the token as a credential:** anyone who has it can run commands with the app's sandbox access when they can reach the listener. Use `relay tokens` to retrieve it; `relay status` also prints it when mutual TLS is off — treat that output as secret. |
 
 When the optional phone toolbar is present, its Remote access key opens a sheet with service switches and connection details. Its glyph uses the system label color while a service is on and idle, blue waves while in use, and a struck-through glyph while off. Command-Option-R opens the sheet even when the toolbar is hidden. Without that toolbar, use `relay status` to check the listener and `relay off` to stop it. No service status floats over terminal text. Older configuration files may still contain `indicator`; that unused field is ignored.
 
@@ -183,7 +183,7 @@ openssl x509 -req -in client.csr -CA client-ca.pem -CAkey client-ca.key -CAcreat
 openssl x509 -in client-ca.pem -outform DER -out .relay-client-ca.der
 ```
 
-Copy `.relay-client-ca.der` to a-Shell's Documents through USB file sharing. In `.relay.json`, change `"bind": "127.0.0.1"` to `"bind": "0.0.0.0"` (or `"bind": "::"` for IPv6), keep `"port": 8765` for this example, and run `relay on`. Copy `.relay-cert.pem` from Documents to the Mac. Obtain the token with `relay tokens` and put it into the Mac's `RELAY_TOKEN` environment variable without committing it to a file or including it in a URL. Replace `PHONE_IP` below with the phone's address and adjust the port if configured:
+Copy `.relay-client-ca.der` to a-Shell's Documents through USB file sharing. **Only after mTLS enrollment**, you may change `"bind": "127.0.0.1"` to `"bind": "0.0.0.0"` (or `"bind": "::"` for IPv6) so a Mac on the LAN can connect; keep `"mutualTLS": true`. Never combine all-interface bind with `mutualTLS: false`. Keep `"port": 8765` for this example, and run `relay on`. Copy `.relay-cert.pem` from Documents to the Mac. Obtain the token with `relay tokens` and put it into the Mac's `RELAY_TOKEN` environment variable without committing it to a file or including it in a URL. Replace `PHONE_IP` below with the phone's address and adjust the port if configured:
 
 ```sh
 curl --cacert .relay-cert.pem --cert client.pem --key client.key \
@@ -193,12 +193,12 @@ curl --cacert .relay-cert.pem --cert client.pem --key client.key \
     https://relay.local:8765/run
 ```
 
-The certificate names `relay.local` and `localhost`; `--resolve` connects to the actual address while checking the certificate name. Do not use `curl -k`. With `mutualTLS: false`, omit `--cert` and `--key`. This reduces authentication to possession of the token; anyone who obtains it can execute commands with the app's access. With either setting, relay is intended for trusted networks. In-app commands share the app's sandbox and can read its credential files; file permissions do not isolate commands from one another.
+The certificate names `relay.local` and `localhost`; `--resolve` connects to the actual address while checking the certificate name. Do not use `curl -k`. With `mutualTLS: false`, omit `--cert` and `--key`, and **keep `bind` on `127.0.0.1` (or `::1`)** — authentication then reduces to possession of the token on this device only. Anyone who obtains the token and can reach the port can execute commands with the app's access. With either setting, relay is intended for trusted networks. In-app commands share the app's sandbox and can read its credential files; file permissions do not isolate commands from one another.
 
-For example, after changing `"mutualTLS": true` to `"mutualTLS": false` and running `relay on`, use:
+For a loopback-only token-auth test (`mutualTLS: false`, `bind: "127.0.0.1"`), after `relay on`, use:
 
 ```sh
-curl --cacert .relay-cert.pem --resolve "relay.local:8765:PHONE_IP" \
+curl --cacert .relay-cert.pem --resolve "relay.local:8765:127.0.0.1" \
     -H "X-Token: $RELAY_TOKEN" --data-binary 'pwd' \
     https://relay.local:8765/run
 ```
