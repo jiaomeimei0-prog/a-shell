@@ -196,7 +196,13 @@ struct RelayConfiguration: Codable {
             lines.append("warning: anyone reaching this port with this token can run commands")
         }
         if bind == "127.0.0.1" || bind == "::1" {
-            lines.append("Mac access: change bind to 0.0.0.0 or :: in the config and run relay on")
+            if mutualTLS {
+                lines.append("Mac access: with mutualTLS true and a client CA enrolled, you may set bind to 0.0.0.0 or :: then run relay on")
+            } else {
+                lines.append("Mac access: keep bind on loopback while mutualTLS is false; do not use 0.0.0.0 without mTLS (token alone is enough to run commands)")
+            }
+        } else if !mutualTLS {
+            lines.append("warning: all-interface bind with mutualTLS false — anyone on the network with the token can run commands")
         }
         lines.append("Mac curl: " + connectCommand(host: host))
         return lines.joined(separator: "\n") + "\n"
