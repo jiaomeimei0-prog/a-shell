@@ -42,8 +42,9 @@ func startLocalWebServer(ready: (() -> Void)? = nil) {
         }
         if let ready { localServerReady.append(ready) }
         do {
-            let data = try Data(contentsOf: Bundle.main.resourceURL!.appendingPathComponent("localCertificate.pfx"))
-            let tls = try RelayTLS(pkcs12: data, passphrase: "password")
+            // Runtime-generated loopback identity (Application Support + Keychain).
+            // Do not load Bundle localCertificate.pfx — that material is compromised/public.
+            let tls = try LocalLoopbackTLS.prepareIdentity()
             let parameters = try tls.parameters()
             parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: NWEndpoint.Port(rawValue: LocalServerPorts.wasm)!)
             let server = LocalHTTPServer(queue: localServerQueue, requiresContentLength: false, connectionLimit: 64)

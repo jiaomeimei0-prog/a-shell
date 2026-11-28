@@ -74,6 +74,21 @@ struct RelayTLS {
     }
 
     private static func generate() throws -> Data {
+        try generatePKCS12(
+            passphrase: passphrase,
+            friendlyName: "relay",
+            commonName: "relay.local",
+            subjectAltName: "DNS:relay.local,DNS:localhost,IP:127.0.0.1"
+        )
+    }
+
+    /// Shared PKCS#12 generator (Relay + local WASM HTTPS).
+    static func generatePKCS12(
+        passphrase: String,
+        friendlyName: String,
+        commonName: String,
+        subjectAltName: String
+    ) throws -> Data {
         guard let key = EVP_PKEY_new() else { throw failure("allocate TLS key") }
         defer { EVP_PKEY_free(key) }
         guard let ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1) else { throw failure("allocate TLS curve") }
@@ -89,17 +104,22 @@ struct RelayTLS {
               X509_gmtime_adj(X509_getm_notAfter(cert), 10 * 365 * 86400) != nil,
               X509_set_pubkey(cert, key) == 1,
               let name = X509_get_subject_name(cert) else { throw failure("initialize TLS certificate") }
-        let commonName = Array("relay.local".utf8)
-        guard X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, commonName, commonName.count, -1, 0) == 1,
+        let commonNameBytes = Array(commonName.utf8)
+        guard X509_NAME_add_entry_by_txt(name, "CN", MBSTRING_ASC, commonNameBytes, commonNameBytes.count, -1, 0) == 1,
               X509_set_issuer_name(cert, name) == 1 else { throw failure("name TLS certificate") }
-        for (nid, value) in [(NID_subject_alt_name, "DNS:relay.local,DNS:localhost,IP:127.0.0.1"), (NID_basic_constraints, "critical,CA:FALSE"), (NID_ext_key_usage, "serverAuth"), (NID_key_usage, "critical,digitalSignature")] {
+        for (nid, value) in [
+            (NID_subject_alt_name, subjectAltName),
+            (NID_basic_constraints, "critical,CA:FALSE"),
+            (NID_ext_key_usage, "serverAuth"),
+            (NID_key_usage, "critical,digitalSignature")
+        ] {
             guard let ext = X509V3_EXT_nconf_nid(nil, nil, nid, value) else { throw failure("create TLS certificate extension") }
             let result = X509_add_ext(cert, ext, -1)
             X509_EXTENSION_free(ext)
             guard result == 1 else { throw failure("add TLS certificate extension") }
         }
         guard X509_sign(cert, key, EVP_sha256()) > 0,
-              let p12 = PKCS12_create(passphrase, "relay", key, cert, nil, NID_pbe_WithSHA1And3_Key_TripleDES_CBC, NID_pbe_WithSHA1And3_Key_TripleDES_CBC, 0, 0, 0) else { throw failure("sign TLS identity") }
+              let p12 = PKCS12_create(passphrase, friendlyName, key, cert, nil, NID_pbe_WithSHA1And3_Key_TripleDES_CBC, NID_pbe_WithSHA1And3_Key_TripleDES_CBC, 0, 0, 0) else { throw failure("sign TLS identity") }
         defer { PKCS12_free(p12) }
         let count = i2d_PKCS12(p12, nil)
         guard count > 0 else { throw failure("size TLS identity") }
@@ -110,6 +130,10 @@ struct RelayTLS {
         }
         guard written == count else { throw failure("encode TLS identity") }
         return result
+    }
+
+    static func sha256Fingerprint(of certificate: SecCertificate) -> Data {
+        Data(SHA256.hash(data: SecCertificateCopyData(certificate) as Data))
     }
 
     func parameters() throws -> NWParameters {
@@ -132,6 +156,112 @@ struct RelayTLS {
             }, DispatchQueue(label: "relay.tls.verify"))
         }
         return NWParameters(tls: tls, tcp: NWProtocolTCP.Options())
+    }
+}
+
+/// Runtime-generated loopback TLS for the WASM HTTPS server (not the compromised Bundle pfx).
+enum LocalLoopbackTLS {
+    private static let keychainService = "AsheKube.a-Shell.localLoopbackTLS"
+    private static let keychainAccount = "wasm-pkcs12-passphrase"
+    private static let lock = NSLock()
+    private static var cachedLeafSHA256: Data?
+
+    static func expectedLeafSHA256() -> Data? {
+        lock.lock(); defer { lock.unlock() }
+        return cachedLeafSHA256
+    }
+
+    static func leafSHA256(of trust: SecTrust) -> Data? {
+        let leaf: SecCertificate?
+        if SecTrustGetCertificateCount(trust) > 0 {
+            leaf = SecTrustGetCertificateAtIndex(trust, 0)
+        } else {
+            leaf = nil
+        }
+        guard let leaf else { return nil }
+        return RelayTLS.sha256Fingerprint(of: leaf)
+    }
+
+    static func prepareIdentity() throws -> RelayTLS {
+        let directory = try storageDirectory()
+        let file = directory.appendingPathComponent("identity.p12")
+        let passphrase = try loadOrCreatePassphrase()
+        if !FileManager.default.fileExists(atPath: file.path) {
+            let data = try RelayTLS.generatePKCS12(
+                passphrase: passphrase,
+                friendlyName: "localhost",
+                commonName: "localhost",
+                subjectAltName: "DNS:localhost,IP:127.0.0.1"
+            )
+            try data.write(to: file, options: .atomic)
+            try RelayTLS.protect(file)
+        } else {
+            try RelayTLS.protect(file)
+        }
+        let data = try Data(contentsOf: file)
+        let tls = try RelayTLS(pkcs12: data, passphrase: passphrase)
+        var certificate: SecCertificate?
+        guard SecIdentityCopyCertificate(tls.identity, &certificate) == errSecSuccess, let certificate else {
+            throw NSError(domain: "local.tls", code: 1, userInfo: [NSLocalizedDescriptionKey: "local TLS: could not read certificate"])
+        }
+        let fingerprint = RelayTLS.sha256Fingerprint(of: certificate)
+        lock.lock(); cachedLeafSHA256 = fingerprint; lock.unlock()
+        return tls
+    }
+
+    private static func storageDirectory() throws -> URL {
+        let root = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
+        let directory = root.appendingPathComponent("LocalHTTPS", isDirectory: true)
+        try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        return directory
+    }
+
+    private static func randomPassphrase() throws -> String {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
+            throw NSError(domain: "local.tls", code: 2, userInfo: [NSLocalizedDescriptionKey: "local TLS: could not generate passphrase"])
+        }
+        return Data(bytes).base64EncodedString()
+    }
+
+    private static func loadOrCreatePassphrase() throws -> String {
+        if let existing = loadPassphrase() { return existing }
+        let created = try randomPassphrase()
+        try savePassphrase(created)
+        return created
+    }
+
+    private static func loadPassphrase() -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess, let data = item as? Data, let value = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        return value
+    }
+
+    private static func savePassphrase(_ value: String) throws {
+        let payload = Data(value.utf8)
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: keychainAccount
+        ]
+        SecItemDelete(query as CFDictionary)
+        var add = query
+        add[kSecValueData as String] = payload
+        add[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        let status = SecItemAdd(add as CFDictionary, nil)
+        guard status == errSecSuccess else {
+            throw NSError(domain: "local.tls", code: Int(status), userInfo: [NSLocalizedDescriptionKey: "local TLS: could not store passphrase"])
+        }
     }
 }
 

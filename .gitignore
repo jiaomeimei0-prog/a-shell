@@ -92,3 +92,8 @@ Resources/npm/
 Resources/node-fetch/
 /fzf/fzf.xcframework/
 /navi/navi.xcframework/
+
+# Compromised / obsolete bundle TLS material (do not re-add)
+localCertificate.pfx
+localCertificate.pem
+localCertificateKey.pem
