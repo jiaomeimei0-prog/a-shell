@@ -1,0 +1,73 @@
+=== Package.swift ===
+(none)
+=== pbxproj ===
+(none)
+=== non-historical sshd ===
+1:# sshd removed (history)
+5:The in-app OpenSSH **server** binary (`sshd.xcframework` from ios_system v3.0.5) and its Remote Access on/off UI are removed from this fork.
+11:- Catalogue `Resources/commandDictionary.plist` remains **158** entries (there was never an `sshd` plist key)
+1:# PR3 evidence — remove sshd binary + UI
+3:**Branch:** `cursor/remove-sshd-45fd`  
+9:This tip has **no** `xcfs/frameworks.json` (only `xcfs/Package.swift` + `Package.resolved` + `Sources/build`). sshd was removed from `Package.swift` binaryTargets. No frameworks.json entry to delete.
+14:$ rg -n 'sshd' xcfs/Package.swift
+17:$ rg -n 'sshd' a-Shell.xcodeproj/project.pbxproj
+20:$ rg -nI 'sshd' --glob '!SwiftTerm/**' --glob '!Resources/vim/**' --glob '!Resources/man/**'
+30:print(len(d), 'sshd' in d, [k for k in d if str(k).startswith('ssh') or k in ('scp','sftp')])"
+34:Catalogue stays **158** (no `sshd` plist key existed). Client tools kept: ssh / scp / sftp / ssh-keygen / ssh-agent / ssh-add via `ssh_cmd` / `ssh_cmdA` / `ssh_agent`.
+38:- `xcfs/Package.swift` — drop `sshd` binaryTarget
+39:- `a-Shell.xcodeproj/project.pbxproj` — drop sshd.xcframework file ref/group
+41:- `a-Shell/SceneDelegate.swift` — no `sshd on|off`; reject kind `ssh`
+42:- `Docs/sshd-removal-note.md` — history
+46:- OpenSSH manpage cross-refs to `sshd(8)` / `sshd_config(5)`
+47:- Vim `sshdconfig` syntax (editor support for a file type, not the binary)
+51:- App builds without sshd.xcframework
+53:- `help -l` has no `sshd`; ssh/scp/sftp/ssh-keygen/ssh-agent/ssh-add remain
+5:=== non-historical sshd ===
+252:.Xr sshd_config 5
+595:.Xr sshd_config 5 ,
+728:.Xr sshd_config 5 .
+794:.Xr sshd 8 ,
+1367:.Xr sshd 8
+1369:.Ic sshd -i
+1490:.Xr sshd_config 5 .
+1558:.Xr sshd_config 5 ) .
+1608:.Xr sshd_config 5
+1834:.Xr sshd 8
+267:.Xr sshd 8
+359:.Nm sshd ,
+506:.Xr sshd 8
+626:.Xr sshd_config 5 .
+957:.Xr sshd 8
+978:.Xr sshd 8 .
+1023:.Xr sshd 8
+1081:.Xr sshd 8
+1114:.Xr sshd 8 .
+1209:.Xr sshd 8
+159:.Xr sshd_config 5 .
+253:.Xr sshd 8
+128:.Xr sshd_config 5 .
+222:.Xr sshd 8
+602:.Xr sshd_config 5
+676:.Xr sshd_config 5 ) .
+1301:.Xr sshd_config 5
+1453:.Xr sshd 8
+1458:.Xr sshd 8 ,
+1481:.Xr sshd_config 5 .
+1489:.Xr sshd 8
+1514:.Xr sshd 8
+1561:.Xr sshd 8
+1570:.Xr sshd 8
+1603:.Xr sshd 8
+1611:.Xr sshd 8
+1628:.Xr sshd 8
+132:.Xr sshd 8
+316:.Xr sshd 8
+692:.Xr sshd 8
+221:.Xr sshd 8
+49:    // sshd binary/UI removed; Remote Access sheet is Relay-only.
+129:        // remoteSSHHistory removed with sshd; Relay history uses remoteRelayHistory above.
+453:        ServiceStatus.Kind.allCases // Relay only (sshd removed)
+1809:        // sshd removed from the app; Remote Access controls Relay only.
+1811:            services.controlError = "SSH server (sshd) is not available in this build."
+=== catalogue ===
+count 158 False

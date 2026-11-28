@@ -46,7 +46,8 @@ struct ServiceIndicator: Identifiable {
 
 
 struct ServiceStatus: Identifiable, Equatable {
-    enum Kind: String, CaseIterable { case ssh, relay }
+    // sshd binary/UI removed; Remote Access sheet is Relay-only.
+    enum Kind: String, CaseIterable { case relay }
     let kind: Kind
     var id: String { kind.rawValue }
     var port: Int
@@ -63,14 +64,9 @@ struct ServiceStatus: Identifiable, Equatable {
         lhs.kind == rhs.kind && lhs.port == rhs.port && lhs.listen == rhs.listen && lhs.fingerprint == rhs.fingerprint && lhs.mutualTLS == rhs.mutualTLS && lhs.account == rhs.account && lhs.clients == rhs.clients && lhs.reportedClientCount == rhs.reportedClientCount
     }
 
-    func sshCommand(host: String) -> String {
-        let quote: (String) -> String = { "'" + $0.replacingOccurrences(of: "'", with: "'\\''") + "'" }
-        return "ssh -p \(port) \(quote(account + "@" + host))"
-    }
-
-    var title: String { kind == .ssh ? "SSH" : "Relay" }
+    var title: String { "Relay" }
     var activeClientCount: Int {
-        reportedClientCount ?? clients.filter { kind == .ssh || $0.open || $0.since.timeIntervalSinceNow > -10 }.count
+        reportedClientCount ?? clients.filter { $0.open || $0.since.timeIntervalSinceNow > -10 }.count
     }
 
 }
@@ -130,19 +126,7 @@ final class ServiceIndicators: ObservableObject {
                 RemoteAccessHistory.shared.ended(session: session, status: value["status"] as? Int)
             }
         })
-        historySubscriptions.append(NotificationCenter.default.publisher(for: .init("remoteSSHHistory")).sink { note in
-            guard let value = note.userInfo, let phase = value["phase"] as? String, let session = value["session"] as? String else { return }
-            let date = Date(timeIntervalSince1970: Double(value["at"] as? Int64 ?? 0))
-            if phase == "auth", let fingerprint = value["fingerprint"] as? String {
-                let name = value["name"] as? String ?? ""
-                RemoteAccessHistory.shared.connected(session: session, id: "ssh:" + fingerprint, service: "ssh", label: name.isEmpty ? fingerprint : name, fingerprint: fingerprint, address: value["peer"] as? String ?? "unknown", at: date)
-            } else if phase == "shell" || phase == "exec" {
-                RemoteAccessHistory.shared.began(session: session, kind: phase, text: phase == "exec" ? value["text"] as? String ?? "" : "", at: date)
-            } else if phase == "end" {
-                let status = value["status"] as? Int32 ?? -1
-                RemoteAccessHistory.shared.ended(session: session, status: status < 0 ? nil : Int(status), at: date)
-            }
-        })
+        // remoteSSHHistory removed with sshd; Relay history uses remoteRelayHistory above.
     }
 
     private func publish(_ change: @escaping () -> Void) {
@@ -160,7 +144,7 @@ final class ServiceIndicators: ObservableObject {
         guard let kind = ServiceStatus.Kind(rawValue: item.id) else { return }
         let clients = item.clients.map { client in
             ServiceClient(id: client.id, address: client.address, user: client.user,
-                activity: kind == .ssh ? (client.activity == 2 ? .command(client.command ?? "") : client.activity == 1 ? .shell : .signedIn) : client.command.map { .command($0) } ?? .signedIn,
+                activity: client.command.map { .command($0) } ?? .signedIn,
                 certificateSubject: client.subject, since: client.since, open: client.open, keyName: client.keyName, keyFingerprint: client.keyFingerprint, certificateFingerprint: client.fingerprint)
         }
         set(ServiceStatus(kind: kind, port: item.port, listen: item.listen, fingerprint: item.fingerprint, mutualTLS: item.mutualTLS, clients: clients, stop: { item.stop?() }, account: item.account, reportedClientCount: item.activeClientCount, connectionDetails: item.connectionDetails))
@@ -170,7 +154,6 @@ final class ServiceIndicators: ObservableObject {
         publish {
             var items = self.items.filter { $0.id != item.id }
             items.append(item)
-            items.sort { $0.kind == .ssh && $1.kind != .ssh }
             self.items = items
         }
     }
@@ -467,7 +450,7 @@ private struct ServiceDetailsForm: View {
     @ObservedObject var history = RemoteAccessHistory.shared
 
     private var visibleKinds: [ServiceStatus.Kind] {
-        ServiceStatus.Kind.allCases.filter { $0 == .relay || (commandsAsArray() as? [String])?.contains("sshd") == true }
+        ServiceStatus.Kind.allCases // Relay only (sshd removed)
     }
 
     private var isStopping: Binding<Bool> {
@@ -493,7 +476,7 @@ private struct ServiceDetailsForm: View {
     private func sectionRows(_ kind: ServiceStatus.Kind) -> some View {
         if let item = services.items.first(where: { $0.kind == kind }) {
             ForEach(networks.addresses(for: item)) { address in
-                ServiceAddressRow(address: address, command: item.kind == .ssh ? item.sshCommand(host: address.address) : RemoteRelay.connectCommand(host: address.address), display: address.endpoint(port: item.port))
+                ServiceAddressRow(address: address, command: RemoteRelay.connectCommand(host: address.address), display: address.endpoint(port: item.port))
                     .listRowInsets(EdgeInsets(top: 10, leading: 18, bottom: 10, trailing: 18))
             }
             NavigationLink {
@@ -510,7 +493,7 @@ private struct ServiceDetailsForm: View {
     }
 
     private func sectionHeader(_ kind: ServiceStatus.Kind) -> some View {
-        let title: String = kind == .ssh ? "SSH" : "Relay"
+        let title = "Relay"
         return HStack {
             Text(title).accessibilityIdentifier("service-title-" + kind.rawValue)
             Spacer()
@@ -520,11 +503,7 @@ private struct ServiceDetailsForm: View {
 
     @ViewBuilder
     private func sectionFooter(_ kind: ServiceStatus.Kind) -> some View {
-        if kind == .ssh {
-            Text("Connect to this shell with ssh from the same network. Needs an authorized key.")
-        } else {
-            Text("Run shell commands over HTTPS. Needs a token and, by default, a client certificate (mTLS).")
-        }
+        Text("Run shell commands over HTTPS. Needs a token and, by default, a client certificate (mTLS).")
         if let item = services.items.first(where: { $0.kind == kind }) {
             if networks.addresses(for: item).contains(where: { $0.name == "Wi-Fi LAN" }) {
                 Text("On the same Wi-Fi, use the Wi-Fi address.")
@@ -596,18 +575,6 @@ private struct ServicePage: View {
         List {
             if let item = services.items.first(where: { $0.kind == kind }) {
                 ServiceSection(item: item, addresses: networks.addresses(for: item))
-                if kind == .ssh, let address = networks.bestAddress(for: item) {
-                    Section {
-                        let command = item.sshCommand(host: address.address)
-                        Button { UIPasteboard.general.string = command } label: {
-                            Text(command).font(.footnote.monospaced()).fixedSize(horizontal: false, vertical: true)
-                        }.buttonStyle(.plain).accessibilityIdentifier("ssh-help-connect")
-                        Text("On the client: cat ~/.ssh/id_ed25519.pub").font(.footnote.monospaced()).textSelection(.enabled)
-                        Text("On this device: chmod 700 ~/Documents/.ssh; chmod 600 ~/Documents/.ssh/authorized_keys").font(.footnote.monospaced()).textSelection(.enabled)
-                    } header: { Text("How to connect") } footer: {
-                        Text("Copy the client's public key line into ~/Documents/.ssh/authorized_keys on this device, then set the permissions above. Keep the private key on the client. Tap an address above to copy its ssh command.")
-                    }
-                }
                 if kind == .relay, let address = networks.bestAddress(for: item) {
                     Section {
                         ForEach(RemoteRelay.ConnectionRequest.allCases, id: \.rawValue) { request in
@@ -692,7 +659,7 @@ private struct ServicePage: View {
                 if let error = history.storageError { Text(error) }
             }
         }
-        .navigationTitle(kind == .ssh ? "SSH" : "Relay")
+        .navigationTitle("Relay")
         .serviceCompactSections()
         .listStyle(.insetGrouped)
         .scrollContentBackground(.visible)
@@ -751,17 +718,13 @@ private struct ServiceSection: View {
     var body: some View {
         Section {
             LabeledContent("Port", value: "\(item.port)").monospacedDigit().serviceNumericTransition()
-            if item.kind == .ssh {
-                if let connectionDetails = item.connectionDetails { connectionDetails() }
-            } else {
-                LabeledContent("Client certificates") {
-                    if item.mutualTLS == true { Text("Required") }
-                    else { Text("Off, token only").foregroundStyle(.orange) }
-                }
-                LabeledContent("Server fingerprint") { fingerprint }
+            LabeledContent("Client certificates") {
+                if item.mutualTLS == true { Text("Required") }
+                else { Text("Off, token only").foregroundStyle(.orange) }
             }
+            LabeledContent("Server fingerprint") { fingerprint }
             ForEach(addresses) { address in
-                ServiceAddressRow(address: address, command: item.kind == .ssh ? item.sshCommand(host: address.address) : RemoteRelay.connectCommand(host: address.address), display: address.endpoint(port: item.port))
+                ServiceAddressRow(address: address, command: RemoteRelay.connectCommand(host: address.address), display: address.endpoint(port: item.port))
             }
 
         } footer: {
@@ -771,12 +734,9 @@ private struct ServiceSection: View {
             if addresses.contains(where: { $0.name == "VPN" }) {
                 Text("The VPN address works when both devices use the same VPN and it allows connections between devices, such as Tailscale or WireGuard.")
             }
-            if item.kind == .ssh {
-                Text("Change in ~/Documents/.ssh/sshd_config")
-            }
-            else {
-                Text("Change in ~/Documents/.relay.json")
-                if item.listen == "127.0.0.1" || item.listen == "::1" { Text("Mac access: change bind to 0.0.0.0 or :: in the config and run relay on.") }
+            Text("Change in ~/Documents/.relay.json")
+            if item.listen == "127.0.0.1" || item.listen == "::1" {
+                Text("Mac access: only with mutualTLS enabled and a client CA enrolled may you set bind to 0.0.0.0 or ::. Do not expose all interfaces when mutualTLS is off — the token alone authorizes commands.")
             }
         }
     }
@@ -835,23 +795,14 @@ private struct ServiceClientRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(client.displayName).lineLimit(1).truncationMode(.middle)
-            if kind == .ssh {
-                (Text((client.user ?? "mobile") + " · " + activity + " · since ") + Text(client.since, style: .time))
-                    .font(.footnote).foregroundStyle(.secondary).lineLimit(1).truncationMode(.tail)
-            } else {
-                (Text((client.certificateSubject ?? "no client certificate") + (client.open ? " · connected" : " · last request ")) + (client.open ? Text("") : Text(client.since, style: .time)))
-                    .font(.footnote).foregroundStyle(.secondary)
-            }
+            (Text((client.certificateSubject ?? "no client certificate") + (client.open ? " · connected" : " · last request ")) + (client.open ? Text("") : Text(client.since, style: .time)))
+                .font(.footnote).foregroundStyle(.secondary)
             Text(client.address).font(.footnote.monospaced()).foregroundStyle(.secondary)
             if let fingerprint = client.keyFingerprint ?? client.certificateFingerprint {
                 Text(fingerprint).font(.footnote.monospaced()).lineLimit(1).truncationMode(.middle).textSelection(.enabled)
             }
         }
         .accessibilityElement(children: .combine)
-    }
-
-    private var activity: String {
-        switch client.activity { case .signedIn: return "signed in"; case .shell: return "shell"; case .command(let command): return command }
     }
 }
 

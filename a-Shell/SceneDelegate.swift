@@ -1806,7 +1806,12 @@ class SceneDelegate: UIViewController, UIWindowSceneDelegate, WKNavigationDelega
             services.controlError = "Finish the terminal command before starting a service."
             return
         }
-        let command = kind == "ssh" ? (enabled ? "sshd on" : "sshd off") : (enabled ? "relay on" : "relay off")
+        // sshd removed from the app; Remote Access controls Relay only.
+        guard kind == "relay" else {
+            services.controlError = "SSH server (sshd) is not available in this build."
+            return
+        }
+        let command = enabled ? "relay on" : "relay off"
         self.commandQueue.async {
             DispatchQueue.main.sync {
                 self.terminalView?.moveToBeginningOfLine()
