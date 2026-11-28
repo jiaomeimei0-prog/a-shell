@@ -61,11 +61,6 @@ _ = Package(
             checksum: "3d0022084855fa3c1e1da3c51437b97e6e5532e9c4133bd4c651ebf5d1017eaa"
         ),
         .binaryTarget(
-            name: "sshd",
-            url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/sshd.xcframework.zip",
-            checksum: "e682f5c445799a77dd8b133c5d3f51481236a277fba488556a5a5d4f918d681f"
-        ),
-        .binaryTarget(
             name: "tar",
             url: "https://github.com/holzschu/ios_system/releases/download/v3.0.5/tar.xcframework.zip",
             checksum: "207ab260f8dfb3101938c9e2a949cfd7b76f0e90a000637bbfd6aff47b014a68"

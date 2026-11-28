@@ -2190,7 +2190,6 @@
 		2237DC3028549CB8003E4738 /* jq.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = jq.xcframework; path = xcfs/.build/artifacts/xcfs/jq/jq.xcframework; sourceTree = "<group>"; };
 		223A1C1B2A5EDCA700B1B9AD /* Tips.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tips.swift; sourceTree = "<group>"; };
 		223E91E52EC11C7500A81615 /* openrsyncA.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = openrsyncA.framework; path = xcfs/.build/artifacts/xcfs/openrsyncA.framework; sourceTree = "<group>"; };
-		223EF3432B97490600A8ED5A /* sshd.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = sshd.xcframework; path = xcfs/.build/artifacts/xcfs/sshd/sshd.xcframework; sourceTree = "<group>"; };
 		223FC3C22611F57C00CDC89F /* wasm.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = wasm.html; sourceTree = "<group>"; };
 		223FC3CA2611F9C300CDC89F /* wasm.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = wasm.html; sourceTree = "<group>"; };
 		2242B074232293E5002A20FC /* bin */ = {isa = PBXFileReference; lastKnownFileType = folder; name = bin; path = Resources/bin; sourceTree = "<group>"; };
@@ -4216,7 +4215,6 @@
 				22DC1F8B257012F50068004E /* ssh_cmd.xcframework */,
 				225478B52B7380A5005041FF /* ssh_cmdA.xcframework */,
 				224DF74B2B76428800F13C58 /* ssh_agent.xcframework */,
-				223EF3432B97490600A8ED5A /* sshd.xcframework */,
 				22DC1F8D257012F50068004E /* tar.xcframework */,
 				22DC1F8F257012F50068004E /* text.xcframework */,
 			);
